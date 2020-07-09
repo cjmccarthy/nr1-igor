@@ -101,41 +101,22 @@ export default class Igor extends React.Component {
   setupQueries() {
     const { data, queryTimer } = this.state;
 
-    const nrql = `
+    const nrql =`
       SELECT
-        max(cpuPercent),
-        max(diskUsedPercent),
-        max((memoryUsedBytes/memoryTotalBytes)*100) AS 'max.memoryUsedPercent'
-      FROM SystemSample
-      SINCE 2 minutes ago`;
+        max(temperature),
+        max(humidity),
+        latest(latitude),
+        latest(longitude)
+      FROM EnvironmentGeo
+      SINCE 2 days ago`;
 
-    const [queries, locs] = Object.keys(data).reduce(
-      (a, c, i) => {
-        const loc = data[c];
-        if ('attribute' in loc && 'values' in loc) {
-          a[0].push(
-            `q${i}: nrql(query: "${nrql.replace(/\s\s+/g, ' ')} WHERE ${
-              loc.attribute
-            } IN ('${loc.values.join("','")}')") {results}`
-          );
-          a[1][`q${i}`] = {
-            coords: [loc.lng, loc.lat],
-            name: c,
-            attrib: loc.attribute,
-            values: loc.values
-          };
-        }
-        return a;
-      },
-      [[], {}]
-    );
+    const queries = `q0: nrql(query: "${nrql.replace(/\s\s+/g, ' ')} FACET device.id")`;
 
     if (queryTimer) clearInterval(queryTimer);
 
     this.setState(
       {
         queries: queries,
-        locs: locs,
         queryTimer: setInterval(this.queryData, 60000)
       },
       () => this.queryData()
@@ -151,9 +132,21 @@ export default class Igor extends React.Component {
       querying: true
     });
 
-    const gql = `{actor {account(id: ${accountId}) { ${queries.join(' ')} }}}`;
+    const gql = `
+    {
+      actor {
+        account(id: ${accountId}) {
+          q0: nrql(query: " SELECT max(temperature), max(humidity), latest(latitude), latest(longitude) FROM EnvironmentGeo SINCE 2 days ago FACET device.id") {
+            nrql
+            results
+          }
+        }
+      }
+    }`
     const res = await NerdGraphQuery.query({ query: gql });
-    const results = (((res || {}).data || {}).actor || {}).account || {};
+    console.log(res);
+    const results = (((((res || {}).data || {}).actor || {}).account || {}).q0 ||{}).results || {};
+    console.log(results);
 
     const mapData = Object.keys(locs).map(l => {
       if (l in results) {
