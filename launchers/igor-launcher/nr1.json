@@ -1,7 +1,7 @@
 {
     "schemaType": "LAUNCHER",
     "id": "igor-launcher",
-    "description": "Infra Geo Ops Reporter",
-    "displayName": "IGOR",
+    "description": "IOT Geo Reporter",
+    "displayName": "IOT IGOR",
     "rootNerdletId": "igor-nerdlet"
 }
