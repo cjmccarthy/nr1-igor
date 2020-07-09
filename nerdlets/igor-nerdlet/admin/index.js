@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Settings from './settings';
 import Locations from './locations';
 import Mappings from './mappings';
+import Calibration from './calibration';
 
 export default class Admin extends React.Component {
   static propTypes = {
@@ -51,16 +52,7 @@ export default class Admin extends React.Component {
                 className="u-unstyledLink"
                 onClick={e => this.switchTab(e, 2)}
               >
-                Add/Edit Locations
-              </a>
-            </li>
-            <li className={currentTab === 3 ? 'active' : ''}>
-              <a
-                href="#tab-3"
-                className="u-unstyledLink"
-                onClick={e => this.switchTab(e, 3)}
-              >
-                Hosts at Locations
+                Edit Calibrations
               </a>
             </li>
           </ul>
@@ -74,10 +66,7 @@ export default class Admin extends React.Component {
             />
           </div>
           <div id="tab-2" className={`${currentTab === 2 ? 'show' : ''}`}>
-            <Locations data={data} accountId={accountId} onChange={onChange} />
-          </div>
-          <div id="tab-3" className={`${currentTab === 3 ? 'show' : ''}`}>
-            <Mappings data={data} accountId={accountId} onChange={onChange} />
+            <Calibration settings={settings} accountId={accountId} onChange={onChange} />
           </div>
         </div>
       </div>

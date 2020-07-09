@@ -2,6 +2,6 @@
     "schemaType": "LAUNCHER",
     "id": "igor-launcher",
     "description": "IOT Geo Reporter",
-    "displayName": "IOT IGOR",
+    "displayName": "LOCAL IOT IGOR",
     "rootNerdletId": "igor-nerdlet"
 }
