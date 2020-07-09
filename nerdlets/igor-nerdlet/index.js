@@ -124,9 +124,9 @@ export default class Igor extends React.Component {
   }
 
   async queryData() {
-    const { querying, accountId, queries, locs } = this.state;
+    const { querying, accountId } = this.state;
 
-    if (querying || !queries || !queries.length) return;
+    if (querying) return;
 
     this.setState({
       querying: true
@@ -144,17 +144,15 @@ export default class Igor extends React.Component {
       }
     }`
     const res = await NerdGraphQuery.query({ query: gql });
-    console.log(res);
     const results = (((((res || {}).data || {}).actor || {}).account || {}).q0 ||{}).results || {};
-    console.log(results);
 
-    const mapData = Object.keys(locs).map(l => {
-      if (l in results) {
-        return results[l].results.reduce(
-          (a, r) => Object.assign(r, locs[l]),
-          {}
-        );
-      } else return [];
+    const mapData = results.map(r => {
+      return {
+        coords: [r['latest.longitude'], r['latest.latitude']],
+        humidity: r['max.humidity'],
+        temperature: r['max.temperature'],
+        name: r['device.id']
+      }
     });
 
     const defaultAttribs = {
@@ -180,25 +178,18 @@ export default class Igor extends React.Component {
     const layers = [
       new ColumnLayer({
         ...defaultAttribs,
-        id: 'maxProcLayer',
-        offset: [-2, 0],
-        getElevation: d => d['max.cpuPercent'] * 100,
-        getFillColor: d => this.colorByPercent(d['max.cpuPercent'])
-      }),
-      new ColumnLayer({
-        ...defaultAttribs,
-        id: 'maxMemLayer',
+        id: 'maxHumidityLayer',
         offset: [0, 0],
-        getElevation: d => d['max.memoryUsedPercent'] * 100,
-        getFillColor: d => this.colorByPercent(d['max.memoryUsedPercent'])
+        getElevation: d => d.humidity*100,
+        getFillColor: d => this.colorByPercent(d.humidity)
       }),
       new ColumnLayer({
         ...defaultAttribs,
-        id: 'maxDiskLayer',
+        id: 'maxTempLayer',
         offset: [2, 0],
-        getElevation: d => d['max.diskUsedPercent'] * 100,
-        getFillColor: d => this.colorByPercent(d['max.diskUsedPercent'])
-      })
+        getElevation: d => d.temperature*100,
+        getFillColor: d => this.colorByPercent(d.temperature)
+      }),
     ];
 
     this.setState({
@@ -318,31 +309,21 @@ export default class Igor extends React.Component {
                 <div>
                   <Donut
                     percent={this.percentFormatter(
-                      hoveredObject['max.cpuPercent']
+                      hoveredObject.temperature
                     )}
                   />
                 </div>
-                <span>CPU</span>
+                <span>Temperature</span>
               </div>
               <div className="cell">
                 <div>
                   <Donut
                     percent={this.percentFormatter(
-                      hoveredObject['max.memoryUsedPercent']
+                      hoveredObject.humidity
                     )}
                   />
                 </div>
-                <span>Memory</span>
-              </div>
-              <div className="cell">
-                <div>
-                  <Donut
-                    percent={this.percentFormatter(
-                      hoveredObject['max.diskUsedPercent']
-                    )}
-                  />
-                </div>
-                <span>Disk</span>
+                <span>Humidity</span>
               </div>
             </div>
           </div>
