@@ -94,13 +94,6 @@ export default class Calibration extends React.Component {
     } = this.state;
     const { settings } = this.props;
 
-    console.log(defaultTempMin);
-    console.log(defaultTempMax);
-    console.log(defaultHumidityMin);
-    console.log(defaultHumidityMax);
-
-    console.log(settings);
-
     const formStyle = {
       font: '1.5em Inconsolata, monospace',
       border: '1px solid #e3e4e4',

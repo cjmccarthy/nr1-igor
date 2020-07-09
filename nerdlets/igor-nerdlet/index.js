@@ -83,6 +83,8 @@ export default class Igor extends React.Component {
       return a;
     }, {});
 
+    console.log(o);
+
     if ('settings' in o && 'mapDefaults' in o.settings) {
       o.viewState = {
         longitude: parseFloat(o.settings.mapDefaults.longitude),
@@ -90,6 +92,15 @@ export default class Igor extends React.Component {
         zoom: parseFloat(o.settings.mapDefaults.zoom),
         pitch: parseFloat(o.settings.mapDefaults.pitch),
         bearing: parseFloat(o.settings.mapDefaults.bearing)
+      };
+    }
+
+    if ('settings' in o && 'defaults' in o.settings) {
+      o.calibrationState = {
+        tempMin: parseFloat(o.settings.defaults.tempMin),
+        tempMax: parseFloat(o.settings.defaults.tempMax),
+        humidityMin: parseFloat(o.settings.defaults.humidityMin),
+        humidityMax: parseFloat(o.settings.defaults.humidityMax),
       };
     }
 
@@ -124,7 +135,7 @@ export default class Igor extends React.Component {
   }
 
   async queryData() {
-    const { querying, accountId } = this.state;
+    const { querying, accountId, calibrationState } = this.state;
 
     if (querying) return;
 
@@ -180,15 +191,24 @@ export default class Igor extends React.Component {
         ...defaultAttribs,
         id: 'maxHumidityLayer',
         offset: [0, 0],
-        getElevation: d => d.humidity*100,
-        getFillColor: d => this.colorByPercent(d.humidity)
+        getElevation: d => this.convertPercent(d.humidity, 
+          calibrationState.humidityMin,
+          calibrationState.humidityMax)*100,
+        getFillColor: d => this.colorByPercent(
+          this.convertPercent(d.humidity, 
+          calibrationState.humidityMin,
+          calibrationState.humidityMax))
       }),
       new ColumnLayer({
         ...defaultAttribs,
         id: 'maxTempLayer',
         offset: [2, 0],
-        getElevation: d => d.temperature*100,
-        getFillColor: d => this.colorByPercent(d.temperature)
+        getElevation: d => this.convertPercent(d.temperature,
+          calibrationState.tempMin,
+          calibrationState.tempMax)*100,
+        getFillColor: d => this.colorByPercent(this.convertPercent(d.temperature,
+          calibrationState.tempMin,
+          calibrationState.tempMax))
       }),
     ];
 
@@ -203,6 +223,19 @@ export default class Igor extends React.Component {
     const o = {};
     o[type] = data;
     this.setState(o, () => this.loadData());
+  }
+
+  convertPercent(value, min, max) {
+    console.log(value)
+    console.log(min)
+    console.log(max)
+    if (value > max) {
+      value = max;
+    } else if (value < min) {
+      value = min;
+    }
+
+    return (value-min)/(max-min)*100;
   }
 
   colorByPercent(pct, isString) {
