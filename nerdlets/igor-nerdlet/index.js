@@ -257,6 +257,7 @@ export default class Igor extends React.Component {
       settings,
       data,
       viewState,
+      calibrationState,
       mapData,
       layers,
       hoveredIndex,
@@ -342,21 +343,25 @@ export default class Igor extends React.Component {
                 <div>
                   <Donut
                     percent={this.percentFormatter(
-                      hoveredObject.temperature
+                      this.convertPercent(hoveredObject.temperature,
+                        calibrationState.tempMin,
+                        calibrationState.tempMax)
                     )}
                   />
                 </div>
-                <span>Temperature</span>
+                <span>Temp to Max</span>
               </div>
               <div className="cell">
                 <div>
                   <Donut
                     percent={this.percentFormatter(
-                      hoveredObject.humidity
+                      this.convertPercent(hoveredObject.humidity,
+                        calibrationState.humidityMin,
+                        calibrationState.humidityMax)
                     )}
                   />
                 </div>
-                <span>Humidity</span>
+                <span>Humidity to Max</span>
               </div>
             </div>
           </div>
